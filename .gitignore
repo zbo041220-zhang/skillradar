@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.env.*
+*.log
+
+# 数据（原始 JD 可能含个人信息，默认不提交）
+backend/data/
+*.db
+*.sqlite3
+
+# 前端
+node_modules/
+dist/
+
+# IDE / 编辑器
+.idea/
+.vscode/
+
+# 系统
+.DS_Store
+Thumbs.db
