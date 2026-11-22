@@ -155,8 +155,8 @@ SkillRadar_project/
 ### 第一周 · 数据与智能层
 
 #### Day 1 — 搭骨架
-- [ ] 建 `backend/`，写 `requirements.txt`（fastapi / uvicorn / sqlalchemy / psycopg2-binary / pandas / httpx / beautifulsoup4 / openai）
-- [ ] `main.py` 写一个 hello 接口
+- [x] 建 `backend/`，写 `requirements.txt`（fastapi / uvicorn / sqlalchemy / psycopg2-binary / pandas / httpx / beautifulsoup4 / openai）
+- [x] `main.py` 写一个 hello 接口
 - **验收**：`uvicorn main:app --reload` 起来，浏览器打开返回内容
 
 #### Day 2 — 爬虫跑通（先不写库）
@@ -255,7 +255,7 @@ SkillRadar_project/
 
 | 天 | 目标 | 状态 |
 |---|---|---|
-| D1 | 搭骨架 | ⬜ |
+| D1 | 搭骨架 | ✅ |
 | D2 | 爬虫跑通 | ⬜ |
 | D3 | 建表入库 | ⬜ |
 | D4 | LLM 抽取 v1 | ⬜ |

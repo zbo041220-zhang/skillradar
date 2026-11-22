@@ -1,0 +1,10 @@
+# SkillRadar 后端依赖（Python 3.13，锁定到本地已验证版本）
+# 说明：uvicorn 用 [standard] 是为了带上 --reload 需要的 watchfiles
+fastapi==0.139.0
+uvicorn[standard]==0.50.0
+SQLAlchemy==2.0.48
+psycopg2-binary==2.9.12
+pandas==3.0.2
+httpx==0.28.1
+beautifulsoup4>=4.12
+openai==2.30.0
