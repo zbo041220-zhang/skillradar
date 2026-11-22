@@ -1,0 +1,82 @@
+# 开发难点记录（Problem Collection）
+
+> 记录开发《AI 岗位技能雷达》过程中遇到的困难、原因与处理方式。持续更新。
+
+## Day 1 — 搭骨架
+
+### 1. 沙箱文件权限被拒
+- **现象**：第一次跑命令报 `SetNamedSecurityInfoW failed ... grantWrite(D:\SkillRadar_project)`
+- **原因**：工作区目录缺当前用户的一项权限，DSH 沙箱无法在工作区落笔
+- **处理**：用诊断脚本补了一条完全控制权限并验证通过
+
+### 2. 建虚拟环境时装不上 pip
+- **现象**：`python -m venv .venv` 报 `PermissionError`，pip 装不进去
+- **原因**：沙箱在 workspace-write 模式下拦住 pip/ensurepip 的「写临时文件 + 删除临时文件」
+- **处理**：临时目录指到 D 盘 + 用一次放宽权限（full access）完成初始化
+
+### 3. pip 装依赖被拦
+- **现象**：`pip install` 报 Permission denied（写 wheel 元数据 / 删临时目录）
+- **处理**：同样走一次 full access 完成安装；依赖装到 D 盘 `.venv`，pip 缓存/临时目录也放 D 盘
+
+### 4. uvicorn --reload 在沙箱里起不来
+- **现象**：刷屏 `PermissionError`（`CreateNamedPipe` 被拒）
+- **原因**：`--reload` 用 multiprocessing，Windows 上要建「命名管道」，沙箱不允许
+- **处理**：验证时用不带 `--reload` 的方式；日常开发在自己终端跑 `--reload`
+
+### 5. git commit / push 写 .git 被拦
+- **现象**：`Unable to create .git/index.lock: Permission denied`
+- **处理**：每次 commit/push 用一次 full access
+
+### 6. C 盘空间紧张 + Python 装在 C 盘
+- **处理**：虚拟环境建在 D 盘，依赖、pip 缓存、临时文件都放 D 盘
+
+## Day 2 — 爬虫
+
+### 1. 主流招聘网站反爬（核心难点）
+| 网站 | 现象 | 结论 |
+|---|---|---|
+| 拉勾 lagou | 页面是 JS 壳，接口 401 要 X-Anit-Forge 签名 | 高级反爬，拦 |
+| 51job | 阿里云 WAF 验证页 | 拦 |
+| BOSS直聘 | 需登录（cookie） | 拦（除非登录） |
+| 智联 zhaopin | 接口通但一直返回空结果 | 需补会话/参数 |
+| 猎聘 liepin | 反爬脚本 | 拦 |
+| 牛客 nowcoder | SSR 直接内嵌职位 JSON | ✅ 唯一可用 |
+
+- **处理**：Day 2 用牛客（唯一免登录能拿到完整 JD 的）
+- **待办**：针对被反爬拦的站，考虑「浏览器自动化 + 手动」方案（见下方 P1）
+
+### 2. 牛客关键词搜索 SSR 层不生效
+- **现象**：`?query=算法` 会重定向回默认列表，关键词筛不掉
+- **原因**：搜索是前端另发接口做的，SSR 里没有
+- **影响**：Day 5「凑 100 条 AI 岗」需另找搜索接口或翻页方式
+
+### 3. 列表里混有广告位
+- **现象**：jobList 里有 `jobName=None`、`ext` 为空的条目
+- **处理**：爬虫里过滤掉无标题/无 JD 的条目
+
+### 4. Clash 系统代理导致 httpx 走代理超时
+- **现象**：抓牛客详情页时 SSL 握手超时（httpcore 走 http_proxy）
+- **原因**：Clash 开了系统代理，httpx 默认 `trust_env=True` 会读它
+- **处理**：爬国内站用 `trust_env=False` 直连
+
+### 5. 中文输出乱码
+- **现象**：PowerShell 捕获 python 输出，中文变乱码
+- **处理**：设 `PYTHONIOENCODING=utf-8` + Console OutputEncoding 为 UTF-8（仅显示问题，数据本身正常）
+
+## 待解决问题
+
+### P1. 被反爬拦的网站怎么拿数据（用户新需求）
+- **想法**：用「浏览器自动化 + 手动」方式（真实浏览器过反爬），不用 httpx/requests
+- **尝试过程（按顺序）**：
+  1. Playwright 自己开浏览器（Edge/Chrome）→ 被 BOSS 反爬识别，页面反复跳转
+  2. 加 stealth（隐藏 webdriver、关自动化标志）→ 仍被识别，无效
+  3. 改 CDP 附加到手动打开的调试 Chrome（浏览器 100% 真实）→ 能连上、能检测页面，脚本已就绪（自动检测模式）
+  4. 网络两难：不开代理打不开 BOSS，开代理过不了手机号验证（建议扫码登录绕过）
+- **结论（2026-11-23 挂起）**：
+  - 方案技术上可行，但投入产出比低：耗时过长，且用户用真实账号测试有封号风险
+  - 按计划纪律「卡住超 2 小时就跳过」挂起；数据源继续用牛客（免登录、已跑通）
+- **沉淀**：`backend/crawler/boss_playwright.py`（CDP 半手动方案，以后可复用）；面试素材：反爬对抗的真实成本
+- **附带发现的环境问题**：
+  - Playwright 依赖命名管道，DSH 沙箱内跑不了，须在用户终端跑（与 uvicorn `--reload` 同根因）
+  - 本机 `C:\Users\zbo29\AppData\Local\Temp` 被拦（mkdtemp EPERM），临时目录改指 D 盘绕过
+- **状态**：挂起。何时重启：拿到 100 条牛客数据后仍缺量，或作为简历加分项再做
