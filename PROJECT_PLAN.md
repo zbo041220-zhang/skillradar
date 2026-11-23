@@ -164,8 +164,8 @@ SkillRadar_project/
 - **验收**：能打印出 5 条真实 JD 文本
 
 #### Day 3 — 建表 + 入库
-- [ ] `db/` 写 SQLAlchemy 的 `jobs` 表模型 + 建表脚本
-- [ ] 把 Day 2 的数据写入 jobs
+- [x] `db/` 写 SQLAlchemy 的 `jobs` 表模型 + 建表脚本
+- [x] 把 Day 2 的数据写入 jobs
 - **验收**：`SELECT count(*) FROM jobs` ≥ 5
 
 #### Day 4 — LLM 抽取第一版
@@ -257,7 +257,7 @@ SkillRadar_project/
 |---|---|---|
 | D1 | 搭骨架 | ✅ |
 | D2 | 爬虫跑通 | ✅ |
-| D3 | 建表入库 | ⬜ |
+| D3 | 建表入库 | ✅ |
 | D4 | LLM 抽取 v1 | ⬜ |
 | D5 | 批量抽取 + 质检 | ⬜ |
 | D6 | Top 技能统计 | ⬜ |
