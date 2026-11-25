@@ -169,8 +169,8 @@ SkillRadar_project/
 - **验收**：`SELECT count(*) FROM jobs` ≥ 5
 
 #### Day 4 — LLM 抽取第一版
-- [ ] `extractor/` 调 DeepSeek，few-shot 抽取技能，结构化输出
-- [ ] 先跑 3 条看效果
+- [x] `extractor/` 调 DeepSeek，few-shot 抽取技能，结构化输出
+- [x] 先跑 3 条看效果
 - **验收**：3 条 JD 各抽出技能列表，格式对
 
 #### Day 5 — 批量抽取 + 入库 + 质检
@@ -258,7 +258,7 @@ SkillRadar_project/
 | D1 | 搭骨架 | ✅ |
 | D2 | 爬虫跑通 | ✅ |
 | D3 | 建表入库 | ✅ |
-| D4 | LLM 抽取 v1 | ⬜ |
+| D4 | LLM 抽取 v1 | ✅ |
 | D5 | 批量抽取 + 质检 | ⬜ |
 | D6 | Top 技能统计 | ⬜ |
 | D7 | 大小厂 + 门槛 | ⬜ |
