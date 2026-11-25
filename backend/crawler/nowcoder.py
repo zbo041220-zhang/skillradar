@@ -1,11 +1,10 @@
-"""牛客网（nowcoder.com）职位爬虫 —— Day 2。
+"""牛客网（nowcoder.com）职位爬虫。
 
-数据来源：社招职位列表页的服务端渲染数据 ``window.__INITIAL_STATE__``。
-一个列表页即可拿到职位标题、公司名与完整 JD（岗位职责 + 岗位要求），
-不需要单独请求详情页。
+数据来源（都能拿到标题 + 公司 + 完整 JD）：
+1. 列表页 SSR 的 ``window.__INITIAL_STATE__``：社招 / 实习 / 校招各第 1 页；
+2. ``ai-recommend-job`` 接口：推荐流，每页 5 条，可翻页。
 
-说明：国内站点直连即可，因此用 ``trust_env=False`` 跳过系统代理（Clash），
-避免把国内请求绕去代理导致超时。
+说明：国内站点直连即可，用 ``trust_env=False`` 跳过系统代理（Clash）。
 """
 
 from __future__ import annotations
@@ -16,6 +15,14 @@ from dataclasses import dataclass
 import httpx
 
 FULLTIME_LIST_URL = "https://www.nowcoder.com/jobs/fulltime/center"
+RECOMMEND_URL = "https://www.nowcoder.com/np-api/u/job/ai-recommend-job"
+
+# 三个列表页（第 1 页 SSR 各约 20 条）
+LIST_URLS = [
+    "https://www.nowcoder.com/jobs/fulltime/center",
+    "https://www.nowcoder.com/jobs/intern/center",
+    "https://www.nowcoder.com/jobs/school/jobs",
+]
 
 HEADERS: dict[str, str] = {
     "User-Agent": (
@@ -29,7 +36,7 @@ HEADERS: dict[str, str] = {
 
 @dataclass
 class Job:
-    """一条职位记录（Day 2 的中间结果，尚未入库）。"""
+    """一条职位记录。"""
 
     company: str
     title: str
@@ -60,58 +67,115 @@ def _company_name(data: dict) -> str:
     return ""
 
 
-def fetch_jobs(limit: int = 20) -> list[Job]:
-    """抓取社招列表页，返回前 ``limit`` 条有效职位。"""
-    resp = httpx.get(
-        FULLTIME_LIST_URL,
-        headers=HEADERS,
-        timeout=20,
-        follow_redirects=True,
-        trust_env=False,
+def _parse_job_item(data: dict) -> Job | None:
+    """把一条职位 data 转成 Job；广告位/空位/无 JD 返回 None。"""
+    title = data.get("jobName")
+    if not title:
+        return None
+    ext = json.loads(data.get("ext") or "{}")
+    parts = [
+        (ext.get("infos") or "").strip(),
+        (ext.get("requirements") or "").strip(),
+    ]
+    jd_text = "\n".join(p for p in parts if p)
+    if not jd_text:
+        return None
+    job_id = data.get("id")
+    return Job(
+        company=_company_name(data),
+        title=title,
+        jd_text=jd_text,
+        url=f"https://www.nowcoder.com/jobs/detail/{job_id}" if job_id else "",
     )
-    resp.raise_for_status()
 
-    state = _extract_initial_state(resp.text)
-    job_list = state["store"]["fulltimeCenter"]["jobList"]
 
-    jobs: list[Job] = []
-    for item in job_list:
-        data = item.get("data") or {}
-        title = data.get("jobName")
-        if not title:  # 广告位 / 占位卡，没有真实职位
-            continue
+def _job_list_from_state(state: dict) -> list[dict]:
+    """从 __INITIAL_STATE__ 里找到职位列表（兼容 fulltimeCenter/interCenter/schoolCenter 等键）。"""
+    store = state.get("store") or {}
+    for val in store.values():
+        if isinstance(val, dict) and isinstance(val.get("jobList"), list):
+            return val["jobList"]
+    return []
 
-        ext = json.loads(data.get("ext") or "{}")
-        parts = [
-            (ext.get("infos") or "").strip(),
-            (ext.get("requirements") or "").strip(),
-        ]
-        jd_text = "\n".join(p for p in parts if p)
-        if not jd_text:  # 没有 JD 正文，跳过
-            continue
 
-        job_id = data.get("id")
-        jobs.append(
-            Job(
-                company=_company_name(data),
-                title=title,
-                jd_text=jd_text,
-                url=f"https://www.nowcoder.com/jobs/detail/{job_id}" if job_id else "",
-            )
+def fetch_list(url: str, limit: int = 20) -> list[Job]:
+    """抓取一个列表页（SSR），返回有效职位。任何异常都返回空列表。"""
+    try:
+        resp = httpx.get(
+            url, headers=HEADERS, timeout=20, follow_redirects=True, trust_env=False
         )
-        if len(jobs) >= limit:
-            break
-
+        resp.raise_for_status()
+        state = _extract_initial_state(resp.text)
+    except Exception:  # noqa: BLE001
+        return []
+    jobs: list[Job] = []
+    for item in _job_list_from_state(state):
+        job = _parse_job_item(item.get("data") or {})
+        if job:
+            jobs.append(job)
+            if len(jobs) >= limit:
+                break
     return jobs
 
 
+def fetch_recommend(pages: int = 20) -> list[Job]:
+    """抓取 ai-recommend-job 推荐流（每页约 5 条）。"""
+    jobs: list[Job] = []
+    rec_headers = {
+        **HEADERS,
+        "Accept": "application/json, text/plain, */*",
+        "Referer": FULLTIME_LIST_URL,
+    }
+    for page in range(1, pages + 1):
+        try:
+            resp = httpx.get(
+                RECOMMEND_URL,
+                headers=rec_headers,
+                params={"recruitType": 3, "page": page, "pageSize": 20},
+                timeout=20,
+                follow_redirects=True,
+                trust_env=False,
+            )
+            data = resp.json()
+        except Exception:  # noqa: BLE001
+            continue
+        for item in data.get("data") or []:
+            job = _parse_job_item(item)
+            if job:
+                jobs.append(job)
+    return jobs
+
+
+def gather_jobs(target: int = 100) -> list[Job]:
+    """多来源凑数据，按 url 去重，返回至多 target 条。"""
+    seen: set[str] = set()
+    jobs: list[Job] = []
+
+    def add(candidates: list[Job]) -> bool:
+        for j in candidates:
+            key = j.url or f"{j.company}|{j.title}"
+            if key in seen:
+                continue
+            seen.add(key)
+            jobs.append(j)
+            if len(jobs) >= target:
+                return True
+        return False
+
+    for url in LIST_URLS:
+        if add(fetch_list(url)):
+            return jobs[:target]
+    add(fetch_recommend(pages=20))
+    return jobs[:target]
+
+
+def fetch_jobs(limit: int = 20) -> list[Job]:
+    """兼容旧接口：抓社招列表。"""
+    return fetch_list(FULLTIME_LIST_URL, limit=limit)
+
+
 if __name__ == "__main__":
-    result = fetch_jobs(limit=5)
-    print(f"抓取到 {len(result)} 条有效 JD\n")
-    for idx, job in enumerate(result, 1):
-        print(f"===== 第 {idx} 条 =====")
-        print(f"公司: {job.company}")
-        print(f"岗位: {job.title}")
-        print(f"链接: {job.url}")
-        print(f"JD:\n{job.jd_text}")
-        print()
+    result = gather_jobs(target=100)
+    print(f"共凑到 {len(result)} 条有效 JD")
+    for idx, job in enumerate(result[:5], 1):
+        print(f"  {idx}. [{job.title}] @ {job.company}")
