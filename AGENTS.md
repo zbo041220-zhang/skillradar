@@ -14,7 +14,7 @@
 
 ## 工作方式
 
-- **一天一个目标**，做完当天 commit 一次
+- **一天一个目标**，做完当天 commit 一次，commit 后直接 push 到 GitHub（需 Clash 开启）
 - 目标与验收标准见 `PROJECT_PLAN.md` 第 9 节
 - 某天卡住超过 2 小时 → 跳过，先做后面的，别死磕
 - 要改计划（加功能、改技术选型）先说明理由，等用户确认
@@ -60,5 +60,6 @@ git config --global --unset https.proxy
 
 ## 当前状态
 
-Day 0 完成：仓库已建、计划已定稿、git 已配代理。
-下一次从 **Day 1（搭骨架）** 开始。
+Day 1–4 完成并已推送：骨架、牛客爬虫、建表入库（20 条）、LLM 抽取第一版（DeepSeek）。
+BOSS直聘反爬方案已挂起（详见 `problem_collection.txt`）。
+下一次从 **Day 5（批量抽取 + 入库 + 质检）** 开始。
