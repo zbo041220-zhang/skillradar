@@ -191,7 +191,7 @@ SkillRadar_project/
 - **验收**：能输出「大厂 Top10 vs 小厂 Top10」两张表
 
 #### Day 8 — 提炼洞察（今天不写代码）
-- [ ] 写 `notes/insights.md`，写出至少 2 个「反直觉」结论
+- [x] 写 `notes/insights.md`，写出至少 2 个「反直觉」结论
 - **验收**：结论不是复述数据，是判断（例：Agent 岗最值钱的不是 LangChain，是上下文工程）
 
 #### Day 9 — FastAPI 四个接口
@@ -262,7 +262,7 @@ SkillRadar_project/
 | D5 | 批量抽取 + 质检 | ✅ |
 | D6 | Top 技能统计 | ✅ |
 | D7 | 大小厂 + 门槛 | ✅ |
-| D8 | 提炼洞察 | ⬜ |
+| D8 | 提炼洞察 | ✅ |
 | D9 | FastAPI 接口 | ⬜ |
 | D10 | 联调修 bug | ⬜ |
 | D11 | Vue 打通前后端 | ⬜ |
