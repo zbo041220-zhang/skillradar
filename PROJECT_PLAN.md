@@ -183,7 +183,7 @@ SkillRadar_project/
 ### 第二周 · 分析与后端
 
 #### Day 6 — Top 技能统计
-- [ ] `analyzer/` 用 pandas 算技能出现率 Top N
+- [x] `analyzer/` 用 pandas 算技能出现率 Top N
 - **验收**：打印出 Top 10 + 出现率
 
 #### Day 7 — 大厂/小厂对比 + 门槛分布
@@ -260,7 +260,7 @@ SkillRadar_project/
 | D3 | 建表入库 | ✅ |
 | D4 | LLM 抽取 v1 | ✅ |
 | D5 | 批量抽取 + 质检 | ✅ |
-| D6 | Top 技能统计 | ⬜ |
+| D6 | Top 技能统计 | ✅ |
 | D7 | 大小厂 + 门槛 | ⬜ |
 | D8 | 提炼洞察 | ⬜ |
 | D9 | FastAPI 接口 | ⬜ |
