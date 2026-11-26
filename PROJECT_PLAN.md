@@ -187,7 +187,7 @@ SkillRadar_project/
 - **验收**：打印出 Top 10 + 出现率
 
 #### Day 7 — 大厂/小厂对比 + 门槛分布
-- [ ] 按 `company_tier` 分组对比；按 `level` 分布
+- [x] 按 `company_tier` 分组对比；按 `level` 分布
 - **验收**：能输出「大厂 Top10 vs 小厂 Top10」两张表
 
 #### Day 8 — 提炼洞察（今天不写代码）
@@ -261,7 +261,7 @@ SkillRadar_project/
 | D4 | LLM 抽取 v1 | ✅ |
 | D5 | 批量抽取 + 质检 | ✅ |
 | D6 | Top 技能统计 | ✅ |
-| D7 | 大小厂 + 门槛 | ⬜ |
+| D7 | 大小厂 + 门槛 | ✅ |
 | D8 | 提炼洞察 | ⬜ |
 | D9 | FastAPI 接口 | ⬜ |
 | D10 | 联调修 bug | ⬜ |
