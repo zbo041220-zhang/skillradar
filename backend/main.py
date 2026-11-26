@@ -1,11 +1,43 @@
-"""SkillRadar 后端入口（Day 1：最小可运行 hello 接口）。"""
+"""SkillRadar 后端入口（FastAPI）。
+
+运行：在项目根目录执行
+    .\\.venv\\Scripts\\python.exe -m uvicorn backend.main:app --reload
+"""
+
+from __future__ import annotations
 
 from fastapi import FastAPI
+
+from backend.analyzer.stats import compare, meta, skill_level, top_skills
 
 app = FastAPI(title="SkillRadar", version="0.1.0")
 
 
 @app.get("/")
 def hello() -> dict[str, str]:
-    """Day 1 验收用：返回一句欢迎语，确认服务能跑起来。"""
+    """欢迎语，确认服务能跑起来。"""
     return {"message": "SkillRadar 后端已就绪"}
+
+
+@app.get("/skills/top")
+def skills_top(limit: int = 10, tier: str = "all") -> dict:
+    """技能 Top N + 出现率。tier: all / 大厂 / 小厂。"""
+    return {"data": top_skills(limit=limit, tier=tier)}
+
+
+@app.get("/skills/compare")
+def skills_compare(limit: int = 10) -> dict:
+    """大厂 vs 小厂 技能 Top 对比。"""
+    return {"data": compare(limit=limit)}
+
+
+@app.get("/skills/level")
+def skills_level(name: str) -> dict:
+    """某技能的 了解/熟悉/精通 分布。"""
+    return {"data": skill_level(name)}
+
+
+@app.get("/meta")
+def get_meta() -> dict:
+    """数据时点、样本量、来源（前端脚注用）。"""
+    return {"data": meta()}

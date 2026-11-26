@@ -195,7 +195,7 @@ SkillRadar_project/
 - **验收**：结论不是复述数据，是判断（例：Agent 岗最值钱的不是 LangChain，是上下文工程）
 
 #### Day 9 — FastAPI 四个接口
-- [ ] 实现 `/skills/top` `/skills/compare` `/skills/level` `/meta`
+- [x] 实现 `/skills/top` `/skills/compare` `/skills/level` `/meta`
 - **验收**：curl 四个接口都返回正确 JSON
 
 #### Day 10 — 联调 + 修 bug
@@ -263,7 +263,7 @@ SkillRadar_project/
 | D6 | Top 技能统计 | ✅ |
 | D7 | 大小厂 + 门槛 | ✅ |
 | D8 | 提炼洞察 | ✅ |
-| D9 | FastAPI 接口 | ⬜ |
+| D9 | FastAPI 接口 | ✅ |
 | D10 | 联调修 bug | ⬜ |
 | D11 | Vue 打通前后端 | ⬜ |
 | D12 | 榜单 + 第一图 | ⬜ |
