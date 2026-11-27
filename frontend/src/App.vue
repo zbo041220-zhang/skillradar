@@ -3,7 +3,8 @@
 import { ref, onMounted, nextTick } from 'vue'
 import * as echarts from 'echarts'
 
-const API = 'http://127.0.0.1:8000'
+// 本地开发默认打 localhost，部署时用 VITE_API_BASE 指到公网后端
+const API = import.meta.env.VITE_API_BASE || 'http://127.0.0.1:8000'
 
 const top = ref([])
 const big = ref([])
