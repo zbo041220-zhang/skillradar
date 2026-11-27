@@ -9,7 +9,7 @@ from __future__ import annotations
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.analyzer.stats import compare, meta, skill_level, top_skills
+from backend.analyzer.stats import compare, level_distribution, meta, skill_level, top_skills
 
 app = FastAPI(title="SkillRadar", version="0.1.0")
 
@@ -42,9 +42,11 @@ def skills_compare(limit: int = 10) -> dict:
 
 
 @app.get("/skills/level")
-def skills_level(name: str) -> dict:
-    """某技能的 了解/熟悉/精通 分布。"""
-    return {"data": skill_level(name)}
+def skills_level(name: str | None = None) -> dict:
+    """技能的 了解/熟悉/精通 分布；不带 name 时返回整体门槛分布。"""
+    if name:
+        return {"data": skill_level(name)}
+    return {"data": level_distribution()}
 
 
 @app.get("/meta")

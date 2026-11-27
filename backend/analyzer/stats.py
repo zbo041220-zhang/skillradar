@@ -58,6 +58,22 @@ def skill_level(name: str) -> dict:
     return {"name": name, "total": total, "distribution": dist}
 
 
+def level_distribution() -> dict:
+    """整体门槛分布（所有技能按 了解/熟悉/精通 计数）。"""
+    with SessionLocal() as s:
+        rows = s.execute(
+            select(Skill.level, func.count())
+            .group_by(Skill.level)
+            .order_by(func.count().desc())
+        ).all()
+    total = sum(c for _, c in rows)
+    dist = [
+        {"level": lv, "count": c, "rate": round(c / total, 4) if total else 0.0}
+        for lv, c in rows
+    ]
+    return {"total": total, "distribution": dist}
+
+
 def meta() -> dict:
     """数据时点、样本量、来源（前端脚注用）。"""
     with SessionLocal() as s:
