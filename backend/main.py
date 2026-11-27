@@ -7,10 +7,20 @@
 from __future__ import annotations
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from backend.analyzer.stats import compare, meta, skill_level, top_skills
 
 app = FastAPI(title="SkillRadar", version="0.1.0")
+
+# 允许前端（Vite dev 在 5173 端口）跨域访问；部署时再收紧
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/")

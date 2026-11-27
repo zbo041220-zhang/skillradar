@@ -207,7 +207,7 @@ SkillRadar_project/
 ### 第三周 · 前端与部署
 
 #### Day 11 — Vue 脚手架 + 打通前后端
-- [ ] Vue 项目建起来，页面能 fetch `/skills/top` 并显示
+- [x] Vue 项目建起来，页面能 fetch `/skills/top` 并显示
 - **验收**：前端页面能看到后端技能列表
 
 #### Day 12 — 榜单 + 第一张图
@@ -265,7 +265,7 @@ SkillRadar_project/
 | D8 | 提炼洞察 | ✅ |
 | D9 | FastAPI 接口 | ✅ |
 | D10 | 联调修 bug | ✅ |
-| D11 | Vue 打通前后端 | ⬜ |
+| D11 | Vue 打通前后端 | ✅ |
 | D12 | 榜单 + 第一图 | ⬜ |
 | D13 | 对比图 + 脚注 | ⬜ |
 | D14 | 部署公网 | ⬜ |
