@@ -1,10 +1,13 @@
 <script setup>
-// Day 11：从后端拉取技能 Top 榜单并显示
-import { ref, onMounted } from 'vue'
+// Day 12：技能 Top10 榜单（表格）+ ECharts 柱状图
+import { ref, onMounted, nextTick } from 'vue'
+import * as echarts from 'echarts'
 
 const skills = ref([])
 const loading = ref(false)
 const error = ref('')
+const chartEl = ref(null)
+let chart = null
 
 async function loadSkills() {
   loading.value = true
@@ -14,11 +17,35 @@ async function loadSkills() {
     const res = await fetch('http://127.0.0.1:8000/skills/top?limit=10&tier=all')
     const json = await res.json()
     skills.value = json.data
+    await nextTick()
+    renderChart()
   } catch (e) {
     error.value = '加载失败：' + e.message + '（后端起了吗？）'
   } finally {
     loading.value = false
   }
+}
+
+function renderChart() {
+  if (!chartEl.value) return
+  if (!chart) chart = echarts.init(chartEl.value)
+  const names = skills.value.map((s) => s.name)
+  const counts = skills.value.map((s) => s.count)
+  chart.setOption({
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+    grid: { left: 130, right: 40, top: 20, bottom: 30 },
+    xAxis: { type: 'value', name: '出现岗位数' },
+    yAxis: { type: 'category', data: names, inverse: true },
+    series: [
+      {
+        type: 'bar',
+        data: counts,
+        barMaxWidth: 22,
+        itemStyle: { color: '#409eff', borderRadius: [0, 4, 4, 0] },
+        label: { show: true, position: 'right' },
+      },
+    ],
+  })
 }
 
 onMounted(loadSkills)
@@ -29,6 +56,9 @@ onMounted(loadSkills)
     <h1>AI 岗位技能雷达</h1>
     <p v-if="loading">加载中…</p>
     <p v-if="error" class="error">{{ error }}</p>
+
+    <div v-show="skills.length" ref="chartEl" class="chart"></div>
+
     <table v-if="skills.length">
       <thead>
         <tr>
@@ -57,7 +87,7 @@ body {
   margin: 0;
 }
 .container {
-  max-width: 640px;
+  max-width: 720px;
   margin: 40px auto;
   padding: 24px;
   background: #fff;
@@ -68,11 +98,17 @@ h1 {
   font-size: 22px;
   margin: 0 0 16px;
 }
+.chart {
+  width: 100%;
+  height: 400px;
+  margin-bottom: 24px;
+}
 table {
   width: 100%;
   border-collapse: collapse;
 }
-th, td {
+th,
+td {
   text-align: left;
   padding: 10px 12px;
   border-bottom: 1px solid #eee;
